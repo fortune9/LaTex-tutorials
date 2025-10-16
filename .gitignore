@@ -1,0 +1,187 @@
+# Temporary folder
+temp/
+
+# LaTeX auxiliary files
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+
+# LaTeX intermediate files
+*.dvi
+*.xdv
+*.ps
+
+# LaTeX bibliography files
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+# LaTeX build tool files
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+# LaTeX makeindex/glossary files
+*.alg
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.lzo
+*.lzs
+*.idx
+*.ilg
+*.ind
+
+# LaTeX hyperref
+*.brf
+
+# LaTeX TikZ & PGF
+*.dpth
+*.md5
+*.auxlock
+
+# LaTeX morewrites
+*.mw
+
+# LaTeX nomenclature
+*.nlg
+*.nlo
+*.nls
+
+# LaTeX pax
+*.pax
+
+# LaTeX pdfpages
+*.tpt
+
+# LaTeX pythontex
+*.pytxcode
+pythontex-files-*/
+
+# LaTeX tcolorbox
+*.listing
+
+# LaTeX xindy
+*.xdy
+
+# LaTeX beamer
+*.nav
+*.pre
+*.snm
+*.vrb
+
+# LaTeX standalone
+*-standalone.pdf
+
+# LaTeX preview
+*-preview.pdf
+
+# LaTeX changes
+*.soc
+
+# LaTeX comment
+*.cut
+
+# LaTeX latexindent backup
+*.bak[0-9]
+*.bak[0-9][0-9]
+
+# PDF files (usually generated, comment out if you want to track PDFs)
+# *.pdf
+
+# Editor-specific files
+## VS Code
+.vscode/
+!.vscode/settings.json.example
+!.vscode/extensions.json.example
+
+## TeXstudio
+*.txss
+
+## TeXmaker
+*.tcp
+
+## Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+## Emacs
+\#*\#
+.\#*
+auto/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+## Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Linux
+*~
+.directory
+.Trash-*
+
+# Build directories
+build/
+out/
+output/
+dist/
+
+# Package manager directories
+.texlive/
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS generated files
+.Spotlight-V100
+.Trashes
+
+# Backup files
+*~
+*.backup
+*.bak
+*.old
+*.orig
+
+# Archive files (usually don't need to track)
+# *.zip
+# *.tar
+# *.tar.gz
+# *.rar
+# *.7z
+
+# Custom exclusions
+drafts/
+scratch/
+notes.txt
+TODO.txt
