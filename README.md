@@ -32,7 +32,8 @@ LaTex-tutorials/
 ├── 04-compilation/        # Building PDFs
 │   └── 01-compiling-latex.md
 ├── 05-advanced/           # Advanced topics
-│   └── (coming soon)
+│   ├── 01-macros-commands.md
+│   └── 02-custom-classes-templates.md
 ├── 06-resources/          # External resources
 │   └── 01-useful-sites.md
 └── examples/              # Complete examples
@@ -102,10 +103,18 @@ After installation, follow the [Document Structure](01-basics/01-document-struct
 
 If you're already familiar with LaTeX basics:
 
-- Explore advanced topics in `05-advanced/`
-- Study complex examples in `examples/`
-- Learn about specialized packages
-- Optimize your workflow with automation
+1. **Advanced Techniques** (4-8 hours)
+   - [Custom Commands and Macros](05-advanced/01-macros-commands.md) - Create reusable commands
+   - [Custom Classes and Templates](05-advanced/02-custom-classes-templates.md) - Build document classes
+   - Study complex examples in `examples/`
+   - Learn about specialized packages
+   - Optimize your workflow with automation
+
+2. **Specialization**
+   - Create your own document classes for consistent formatting
+   - Choose packages for your field (math, chemistry, linguistics, etc.)
+   - Explore bibliography management (BibTeX, BibLaTeX)
+   - Learn figure and table best practices
 
 ### For Advanced Users
 
@@ -143,6 +152,26 @@ If you're already familiar with LaTeX basics:
 - Bibliography compilation
 - Error debugging
 
+#### Advanced Topics
+- **[Custom Commands and Macros](05-advanced/01-macros-commands.md)** - Create reusable commands and automate repetitive tasks
+  - Basic command definition with `\newcommand`
+  - Commands with arguments (single and multiple)
+  - Optional arguments and default values
+  - Declarations vs commands
+  - Advanced techniques with `xparse`
+  - Best practices and common use cases
+  - Complete working examples
+
+- **[Custom Classes and Templates](05-advanced/02-custom-classes-templates.md)** - Build your own document classes
+  - Understanding classes vs templates vs packages
+  - Basic class structure and components
+  - Creating simple custom classes
+  - Implementing class options and parameters
+  - Custom title pages and formatting
+  - Complete examples (academic papers, company letters, theses)
+  - Template creation and distribution
+  - Best practices and documentation
+
 #### Examples
 - Simple article template
 - Academic paper structure
@@ -157,13 +186,14 @@ If you're already familiar with LaTeX basics:
 
 ### Coming Soon
 
-- Mathematical typesetting
+- Mathematical typesetting (advanced)
 - Bibliography management (BibTeX, Biblatex)
 - Figure and table management
 - Presentations with Beamer
 - Book-length documents
-- Custom commands and environments
+- Custom environments and packages (.sty files)
 - TikZ graphics
+- Multi-file project organization
 - And more!
 
 ## 🔧 Tools and Editors

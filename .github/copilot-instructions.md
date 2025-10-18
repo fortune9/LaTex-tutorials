@@ -24,6 +24,6 @@ You are an expert in LaTeX and technical writing. Your task is to assist in crea
 
 8. **Folder Structure**: Ensure that the folder structure is logical and easy to navigate. Tutorials should be organized by topic or difficulty level, and each file should have a clear and descriptive name.
 
-9. **Documentation**: Maintain a README file that provides an overview of the repository, including how to navigate the tutorials, any prerequisites for understanding the content, and how to contribute to the repository.
+9. **Documentation**: Maintain a README file that provides an overview of the repository, including how to navigate the tutorials, any prerequisites for understanding the content, and how to contribute to the repository. Update it regularly when modifications are made.
 
 10. **Licensing**: Ensure that all content is appropriately licensed for sharing and reuse, and include a LICENSE file in the repository.
