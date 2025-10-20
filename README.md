@@ -33,7 +33,8 @@ LaTex-tutorials/
 │   └── 01-compiling-latex.md
 ├── 05-advanced/           # Advanced topics
 │   ├── 01-macros-commands.md
-│   └── 02-custom-classes-templates.md
+│   ├── 02-custom-classes-templates.md
+│   └── 03-pandoc-templates.md
 ├── 06-resources/          # External resources
 │   └── 01-useful-sites.md
 └── examples/              # Complete examples
@@ -103,9 +104,10 @@ After installation, follow the [Document Structure](01-basics/01-document-struct
 
 If you're already familiar with LaTeX basics:
 
-1. **Advanced Techniques** (4-8 hours)
+1. **Advanced Techniques** (6-10 hours)
    - [Custom Commands and Macros](05-advanced/01-macros-commands.md) - Create reusable commands
    - [Custom Classes and Templates](05-advanced/02-custom-classes-templates.md) - Build document classes
+   - [Pandoc Templates](05-advanced/03-pandoc-templates.md) - Convert Markdown to formatted PDFs
    - Study complex examples in `examples/`
    - Learn about specialized packages
    - Optimize your workflow with automation
@@ -171,6 +173,15 @@ If you're already familiar with LaTeX basics:
   - Complete examples (academic papers, company letters, theses)
   - Template creation and distribution
   - Best practices and documentation
+
+- **[Pandoc Templates](05-advanced/03-pandoc-templates.md)** - Convert Markdown to beautifully formatted documents
+  - What are Pandoc templates and when to use them
+  - Template syntax (variables, conditionals, loops)
+  - Creating LaTeX templates for PDF generation
+  - Working with YAML front matter
+  - Complete working examples (thesis, technical reports, CV/resume)
+  - Markdown-to-PDF workflow
+  - Troubleshooting and best practices
 
 #### Examples
 - Simple article template
