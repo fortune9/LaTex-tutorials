@@ -312,6 +312,504 @@ Normal text {\makebold bold text still bold} normal again.
 
 ---
 
+## Custom Environments with `\newenvironment`
+
+### What Are Environments?
+
+Environments in LaTeX are structures that have a **beginning** and an **end**, like `\begin{...}` and `\end{...}`. They define a scope where specific formatting or behavior applies.
+
+### Key Differences: Commands vs Environments
+
+| Feature | Commands (`\newcommand`) | Environments (`\newenvironment`) |
+|---------|-------------------------|----------------------------------|
+| **Syntax** | `\mycommand{text}` | `\begin{myenv} ... \end{myenv}` |
+| **Scope** | Applies to argument(s) | Applies to content between begin/end |
+| **Use Case** | Short inline formatting | Block-level formatting, longer content |
+| **Structure** | Single definition | Two parts: begin code and end code |
+| **Nesting** | Can be nested in arguments | Can contain paragraphs, lists, etc. |
+
+### Basic `\newenvironment` Syntax
+
+```latex
+\newenvironment{envname}
+    {begin code}      % Code executed at \begin{envname}
+    {end code}        % Code executed at \end{envname}
+```
+
+### Simple Examples
+
+```latex
+% Custom quote environment with styling
+\newenvironment{myquote}
+    {\begin{quote}\itshape\color{blue}}
+    {\end{quote}}
+
+% Usage
+\begin{myquote}
+    This is a custom styled quotation.
+    It can span multiple lines.
+\end{myquote}
+```
+
+```latex
+% Warning box environment
+\newenvironment{warning}
+    {\begin{center}\begin{tabular}{|p{0.9\textwidth}|}
+    \hline
+    \textbf{Warning:} }
+    {\\ \hline
+    \end{tabular}\end{center}}
+
+% Usage
+\begin{warning}
+    This operation is irreversible!
+\end{warning}
+```
+
+### Environments with Arguments
+
+```latex
+\newenvironment{envname}[num_args]
+    {begin code using #1, #2, etc.}
+    {end code}
+```
+
+**Important**: Arguments are only available in the **begin code**, not in the end code.
+
+### Examples with Arguments
+
+```latex
+% Titled box environment
+\newenvironment{titlebox}[1]
+    {\begin{center}\textbf{#1}\\\begin{tabular}{|p{0.9\textwidth}|}
+    \hline}
+    {\\\hline\end{tabular}\end{center}}
+
+% Usage
+\begin{titlebox}{Important Information}
+    This content appears in a box with a title.
+\end{titlebox}
+```
+
+```latex
+% Colored section environment
+\usepackage{xcolor}
+
+\newenvironment{coloredsection}[2]
+    {\section{#1}\color{#2}}
+    {\color{black}}
+
+% Usage
+\begin{coloredsection}{Introduction}{blue}
+    This entire section will be in blue.
+\end{coloredsection}
+```
+
+### Environments with Optional Arguments
+
+```latex
+\newenvironment{envname}[num_args][default]
+    {begin code}
+    {end code}
+```
+
+### Example with Optional Argument
+
+```latex
+% Note environment with optional type
+\newenvironment{note}[1][Note]
+    {\begin{center}\begin{minipage}{0.9\textwidth}
+    \textbf{#1:} \itshape}
+    {\end{minipage}\end{center}}
+
+% Usage
+\begin{note}
+    This is a standard note.
+\end{note}
+
+\begin{note}[Tip]
+    This is a tip.
+\end{note}
+
+\begin{note}[Warning]
+    This is a warning.
+\end{note}
+```
+
+### When to Use Commands vs Environments
+
+#### Use Commands (`\newcommand`) when:
+
+1. **Inline formatting**: Short text or symbols
+2. **Single argument**: Simple text transformation
+3. **Mathematical notation**: Operators, symbols
+4. **Quick replacements**: Abbreviations, names
+
+```latex
+% ✅ Good use of commands
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\highlight}[1]{\textcolor{yellow}{#1}}
+\newcommand{\important}[1]{\textbf{#1}}
+```
+
+#### Use Environments (`\newenvironment`) when:
+
+1. **Block-level content**: Paragraphs, lists, multiple elements
+2. **Complex formatting**: Headers, footers, borders
+3. **Scope management**: Temporary settings
+4. **Structural elements**: Theorems, examples, exercises
+
+```latex
+% ✅ Good use of environments
+\newenvironment{theorem}
+    {\begin{tcolorbox}[title=Theorem]\itshape}
+    {\end{tcolorbox}}
+
+\newenvironment{example}
+    {\par\noindent\textbf{Example:}\begin{quote}}
+    {\end{quote}}
+```
+
+### Advanced Environment Techniques
+
+#### 1. Saving Arguments for End Code
+
+Since arguments aren't available in end code, you need to save them:
+
+```latex
+\newenvironment{savingbox}[1]
+    {\def\savedtitle{#1}% Save argument
+    \begin{center}\textbf{\savedtitle}\\
+    \begin{tabular}{|p{0.8\textwidth}|}
+    \hline}
+    {\\\hline
+    \end{tabular}\\\textit{End of \savedtitle}
+    \end{center}}
+
+% Usage
+\begin{savingbox}{My Title}
+    Content goes here.
+\end{savingbox}
+```
+
+#### 2. Counters in Environments
+
+```latex
+\newcounter{examplenum}
+\newenvironment{example}
+    {\stepcounter{examplenum}
+    \par\noindent\textbf{Example \theexamplenum:}\begin{quote}}
+    {\end{quote}}
+
+% Usage
+\begin{example}
+    First example content.
+\end{example}
+
+\begin{example}
+    Second example content (automatically numbered).
+\end{example}
+```
+
+#### 3. Theorem-like Environments
+
+```latex
+\usepackage{amsthm}
+\usepackage{tcolorbox}
+
+% Custom theorem environment with colored box
+\newenvironment{mytheorem}[1][]
+    {\begin{tcolorbox}[colback=blue!5, colframe=blue!75!black, title=Theorem]
+    \ifx&#1&\else\textbf{(#1)}\fi\par}
+    {\end{tcolorbox}}
+
+% Usage
+\begin{mytheorem}
+    In a right triangle, $a^2 + b^2 = c^2$.
+\end{mytheorem}
+
+\begin{mytheorem}[Pythagorean]
+    In a right triangle, $a^2 + b^2 = c^2$.
+\end{mytheorem}
+```
+
+#### 4. Environments with Different Begin/End Formatting
+
+```latex
+\usepackage{framed, xcolor}
+
+\newenvironment{importantbox}
+    {\begin{leftbar}\color{red}\textbf{Important:}\par}
+    {\end{leftbar}}
+
+% Usage
+\begin{importantbox}
+    This is critical information that needs attention.
+    It can span multiple paragraphs.
+
+    Like this one.
+\end{importantbox}
+```
+
+### Practical Environment Examples
+
+#### 1. Exercise Environment with Numbering
+
+```latex
+\newcounter{exercisenum}[section]  % Reset per section
+
+\newenvironment{exercise}
+    {\stepcounter{exercisenum}
+    \par\medskip\noindent
+    \textbf{Exercise \thesection.\theexercisenum:}\par\nopagebreak}
+    {\par\medskip}
+
+% Usage
+\section{Calculus}
+
+\begin{exercise}
+    Calculate the derivative of $f(x) = x^2 + 3x + 2$.
+\end{exercise}
+
+\begin{exercise}
+    Find the integral of $g(x) = \sin(x)$.
+\end{exercise}
+```
+
+#### 2. Code Listing Environment
+
+```latex
+\usepackage{listings, xcolor}
+
+\newenvironment{pythoncode}
+    {\lstset{language=Python,
+             basicstyle=\ttfamily\small,
+             backgroundcolor=\color{gray!10},
+             frame=single,
+             numbers=left}
+    \lstset{}}
+    {}
+
+% Usage
+\begin{pythoncode}
+def factorial(n):
+    if n == 0:
+        return 1
+    return n * factorial(n-1)
+\end{pythoncode}
+```
+
+#### 3. Solution Environment (Toggle Visibility)
+
+```latex
+\usepackage{comment}
+
+% Define a boolean for showing solutions
+\newif\ifshowsolutions
+\showsolutionstrue  % Set to \showsolutionsfalse to hide
+
+\ifshowsolutions
+    \newenvironment{solution}
+        {\par\noindent\textbf{Solution:}\begin{quote}\color{blue}}
+        {\end{quote}}
+\else
+    \excludecomment{solution}
+\fi
+
+% Usage
+\begin{exercise}
+    Prove that $1 + 1 = 2$.
+\end{exercise}
+
+\begin{solution}
+    This follows from the Peano axioms.
+\end{solution}
+```
+
+#### 4. Multi-Column Environment
+
+```latex
+\usepackage{multicol}
+
+\newenvironment{twocolumns}
+    {\begin{multicols}{2}}
+    {\end{multicols}}
+
+% Usage
+\begin{twocolumns}
+    This text will automatically flow into two columns.
+    
+    It can contain multiple paragraphs and will balance
+    the content between columns.
+\end{twocolumns}
+```
+
+### Combining Commands and Environments
+
+You can create powerful combinations:
+
+```latex
+% Environment for exercises
+\newcounter{exercisenum}
+\newenvironment{exercise}
+    {\stepcounter{exercisenum}\par\medskip\noindent
+    \textbf{Exercise \theexercisenum:}\par}
+    {\par\medskip}
+
+% Command for referencing exercises
+\newcommand{\exref}[1]{Exercise~\ref{ex:#1}}
+
+% Usage
+\begin{exercise}\label{ex:first}
+    Calculate $2 + 2$.
+\end{exercise}
+
+As we saw in \exref{first}, basic arithmetic is important.
+```
+
+### Renewing Environments
+
+```latex
+% Renew existing environment
+\renewenvironment{quote}
+    {\begin{center}\begin{minipage}{0.8\textwidth}\itshape}
+    {\end{minipage}\end{center}}
+
+% Now all \begin{quote}...\end{quote} will use new format
+```
+
+### Best Practices for Environments
+
+1. **Use semantic names**: `\begin{theorem}` not `\begin{bluebox}`
+2. **Document your environments**: Explain purpose and usage
+3. **Handle spacing properly**: Use `\par`, `\medskip`, etc.
+4. **Consider nesting**: Will your environment work inside others?
+5. **Test edge cases**: Empty content, long content, special characters
+6. **Use packages**: `amsthm`, `tcolorbox`, `mdframed` for complex boxes
+
+### Common Mistakes to Avoid
+
+```latex
+% ❌ Bad: Trying to use argument in end code
+\newenvironment{badbox}[1]
+    {\textbf{#1:}}
+    {\textit{End of #1}}  % #1 not available here!
+
+% ✅ Good: Save argument for later use
+\newenvironment{goodbox}[1]
+    {\def\savedtitle{#1}\textbf{\savedtitle:}}
+    {\textit{End of \savedtitle}}
+```
+
+```latex
+% ❌ Bad: Forgetting scoping
+\newenvironment{colortext}
+    {\color{blue}}
+    {}  % Color continues after environment!
+
+% ✅ Good: Proper scoping
+\newenvironment{colortext}
+    {\color{blue}}
+    {\color{black}}  % Reset color
+```
+
+### Complete Example: Custom Document Structure
+
+```latex
+\documentclass{article}
+\usepackage{xcolor, tcolorbox, amsmath}
+
+% ===================================
+% CUSTOM ENVIRONMENTS
+% ===================================
+
+% Theorem environment
+\newcounter{theoremnum}
+\newenvironment{theorem}[1][]
+    {\stepcounter{theoremnum}
+    \begin{tcolorbox}[colback=blue!5, colframe=blue!75!black,
+                      title=Theorem \thetheorem num\ifx&#1&\else: #1\fi]}
+    {\end{tcolorbox}}
+
+% Example environment
+\newcounter{examplenum}
+\newenvironment{example}
+    {\stepcounter{examplenum}
+    \par\medskip\noindent\textbf{Example \theexamplenum:}\par\nopagebreak}
+    {\par\medskip}
+
+% Solution environment
+\newenvironment{solution}
+    {\par\noindent\textit{Solution:}\begin{quote}}
+    {\end{quote}}
+
+% Note box
+\newenvironment{notebox}[1][Note]
+    {\begin{center}\begin{tcolorbox}[colback=yellow!10, colframe=orange,
+                                      title=#1, width=0.9\textwidth]}
+    {\end{tcolorbox}\end{center}}
+
+% ===================================
+% CUSTOM COMMANDS (for comparison)
+% ===================================
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\important}[1]{\textbf{\textcolor{red}{#1}}}
+
+\begin{document}
+
+\section{Mathematical Foundations}
+
+\begin{theorem}[Fundamental Theorem of Calculus]
+    Let $f: [a,b] \to \R$ be continuous. Then:
+    \[
+        \int_a^b f(x)\,dx = F(b) - F(a)
+    \]
+    where $F$ is an antiderivative of $f$.
+\end{theorem}
+
+\begin{example}
+    Calculate $\int_0^1 x^2\,dx$.
+\end{example}
+
+\begin{solution}
+    Using the power rule:
+    \[
+        \int_0^1 x^2\,dx = \left[\frac{x^3}{3}\right]_0^1 = \frac{1}{3}
+    \]
+\end{solution}
+
+\begin{notebox}[Important]
+    The \important{Fundamental Theorem of Calculus} connects
+    differentiation and integration.
+\end{notebox}
+
+\end{document}
+```
+
+### Summary: Commands vs Environments
+
+**Use `\newcommand` for:**
+- ✅ Inline text/symbols
+- ✅ Short formatting
+- ✅ Mathematical notation
+- ✅ Single-argument transformations
+
+**Use `\newenvironment` for:**
+- ✅ Block-level content
+- ✅ Multiple paragraphs
+- ✅ Complex formatting with begin/end structure
+- ✅ Structural document elements
+- ✅ Scoped settings
+
+**Remember:**
+- Commands process their arguments immediately
+- Environments create a scope from `\begin` to `\end`
+- Environments can contain multiple elements (paragraphs, lists, etc.)
+- Environment arguments are only available in begin code (save them if needed in end code)
+
+---
+
 ## Advanced Techniques
 
 ### Starred Commands
