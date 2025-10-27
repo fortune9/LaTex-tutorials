@@ -12,6 +12,9 @@ LaTeX allows you to define custom commands (also called macros) to automate repe
 - [Optional Arguments](#optional-arguments)
 - [Renewing and Providing Commands](#renewing-and-providing-commands)
 - [Declarations vs Commands](#declarations-vs-commands)
+- [Custom Environments with `\newenvironment`](#custom-environments-with-newenvironment)
+- [Advanced Environment Definition with xparse](#advanced-environment-definition-with-xparse)
+- [Pre-defined LaTeX Commands and Macros](#pre-defined-latex-commands-and-macros)
 - [Advanced Techniques](#advanced-techniques)
 - [Best Practices](#best-practices)
 - [Common Use Cases](#common-use-cases)
@@ -807,6 +810,637 @@ As we saw in \exref{first}, basic arithmetic is important.
 - Environments create a scope from `\begin` to `\end`
 - Environments can contain multiple elements (paragraphs, lists, etc.)
 - Environment arguments are only available in begin code (save them if needed in end code)
+
+---
+
+## Advanced Environment Definition with xparse
+
+The `xparse` package provides `\NewDocumentEnvironment` and `\RenewDocumentEnvironment`, which are more powerful and flexible alternatives to `\newenvironment` and `\renewenvironment`.
+
+### What is xparse?
+
+`xparse` is a package that provides a unified interface for parsing command and environment arguments with more advanced features than the standard LaTeX approach. It's part of the LaTeX3 experimental toolkit and offers better control over argument types and error handling.
+
+### Key Differences: `\newenvironment` vs `\NewDocumentEnvironment`
+
+| Feature | `\newenvironment` | `\NewDocumentEnvironment` |
+|---------|------------------|---------------------------|
+| **Argument Syntax** | `[num_args][default]` | More flexible: `o`, `O`, `m`, `r`, `R`, `s`, `t`, `v`, `b`, `d` |
+| **Multiple Optionals** | Only one optional | Can have multiple optional arguments |
+| **Error Handling** | Limited | Better error messages |
+| **Flexibility** | Basic | Supports complex argument patterns |
+| **Documentation** | Less clear | Self-documenting with spec strings |
+| **Package Required** | None | `xparse` |
+| **Arguments in End Code** | Need manual save | Can be accessed directly in end code |
+
+### `\NewDocumentEnvironment` Syntax
+
+```latex
+\usepackage{xparse}
+
+\NewDocumentEnvironment{envname}{arg-spec}{begin-code}{end-code}
+```
+
+where `arg-spec` is a string describing the arguments using these codes:
+
+#### Argument Specifiers for xparse
+
+| Code | Type | Example |
+|------|------|---------|
+| `m` | Mandatory | `\begin{env}{arg}` |
+| `r` | Required delimited | `\begin{env}<arg>` requires `<>` |
+| `R` | Required delimited with default | `\begin{env}` or `\begin{env}<arg>` |
+| `o` | Optional with default empty | `\begin{env}` or `\begin{env}[arg]` |
+| `O` | Optional with custom default | `\begin{env}` or `\begin{env}[arg]` |
+| `d` | Delimiter with default empty | `\begin{env}` or `\begin{env}<arg>` |
+| `D` | Delimiter with custom default | `\begin{env}` or `\begin{env}<arg>` |
+| `s` | Star modifier (boolean) | `\begin{env}*` or `\begin{env}` |
+| `t` | Token modifier | `\begin{env}[token]` or `\begin{env}` |
+| `v` | Verbatim/literal content | For protected content |
+| `b` | Body between begin/end | The environment content |
+
+### Simple `\NewDocumentEnvironment` Examples
+
+#### Example 1: Basic Conversion from `\newenvironment`
+
+**Old style (`\newenvironment`):**
+```latex
+\newenvironment{mybox}[1]
+    {\begin{center}\textbf{#1}\end{center}}
+    {}
+```
+
+**New style (`\NewDocumentEnvironment`):**
+```latex
+\usepackage{xparse}
+
+\NewDocumentEnvironment{mybox}{m}
+    {\begin{center}\textbf{#1}\end{center}}
+    {}
+```
+
+#### Example 2: Multiple Optional Arguments
+
+This is where `\NewDocumentEnvironment` shines! With `\newenvironment`, you can only have one optional argument. With `\NewDocumentEnvironment`, you can have multiple:
+
+```latex
+\usepackage{xparse}
+
+% Two optional arguments with defaults
+\NewDocumentEnvironment{colorbox}{O{blue} O{white}}
+    {\begin{center}\colorbox{#1}{\textcolor{#2}{Content}}\end{center}}
+    {}
+
+% Usage
+\begin{colorbox}
+    % Blue background (default), white text (default)
+\end{colorbox}
+
+\begin{colorbox}[red]
+    % Red background, white text (default)
+\end{colorbox}
+
+\begin{colorbox}[red][black]
+    % Red background, black text
+\end{colorbox}
+```
+
+#### Example 3: Optional with Custom Default
+
+```latex
+\NewDocumentEnvironment{emphasized}
+    {O{emph}}  % Optional argument with default "emph"
+    {%
+        \IfValueTF{#1}{%
+            \ifx #1emph\itshape\fi
+            \ifx #1strong\bfseries\fi
+            \ifx #1code\ttfamily\fi
+        }{\itshape}%
+    }
+    {\normalfont}
+
+% Usage
+\begin{emphasized}
+    Emphasize (default italic)
+\end{emphasized}
+
+\begin{emphasized}[strong]
+    Strong emphasis (bold)
+\end{emphasized}
+
+\begin{emphasized}[code]
+    Code formatting (typewriter)
+\end{emphasized}
+```
+
+#### Example 4: Star Modifier
+
+```latex
+\NewDocumentEnvironment{theorem}{s m}
+    {%
+        \begin{center}
+        \textbf{Theorem\IfBooleanT{#1}{*}: #2}
+        \end{center}
+    }
+    {}
+
+% Usage
+\begin{theorem}{Pythagorean Theorem}
+    $a^2 + b^2 = c^2$
+\end{theorem}
+
+\begin{theorem}*{Pythagorean Theorem}
+    $a^2 + b^2 = c^2$ (without numbering)
+\end{theorem}
+```
+
+#### Example 5: Delimiter Arguments
+
+```latex
+\NewDocumentEnvironment{formula}{r<>}
+    {\[\text{Formula: } #1 \quad \text{or} \quad }
+    {\]}
+
+% Usage - requires <> delimiters
+\begin{formula}<x^2 + y^2 = z^2>
+    a^2 + b^2 = c^2
+\end{formula}
+```
+
+#### Example 6: Arguments Available in Both Begin and End
+
+This is a major advantage of `\NewDocumentEnvironment`! Arguments are available in both sections:
+
+```latex
+\NewDocumentEnvironment{titledbox}{m}
+    {\textbf{#1:}\begin{quote}}
+    {\end{quote}\textit{End of: #1}}  % #1 is accessible here!
+
+% Usage
+\begin{titledbox}{Warning}
+    This is a warning message.
+\end{titledbox}
+
+% Output:
+% Warning:
+%     This is a warning message.
+% End of: Warning
+```
+
+**Without xparse, you'd need:**
+```latex
+\newenvironment{titledbox}[1]
+    {\def\mytitle{#1}\textbf{\mytitle:}\begin{quote}}
+    {\end{quote}\textit{End of: \mytitle}}  % Must save it manually
+```
+
+#### Example 7: Complex Formatting Environment
+
+```latex
+\usepackage{xparse, tcolorbox}
+
+\NewDocumentEnvironment{lesson}
+    {m O{blue} m}  % name (required), color (optional), author (required)
+    {%
+        \begin{tcolorbox}[colback=#2!5, colframe=#2, title=Lesson: #1, subtitle=by #3]
+    }
+    {%
+        \end{tcolorbox}
+    }
+
+% Usage
+\begin{lesson}{Calculus}{green}{Dr. Smith}
+    Content of the lesson goes here.
+    This can span multiple paragraphs.
+\end{lesson}
+
+\begin{lesson}{Algebra}{red}{Prof. Jones}
+    Another lesson with different color and author.
+\end{lesson}
+```
+
+### `\RenewDocumentEnvironment` - Redefining Environments
+
+Just like `\renewenvironment` renews existing environments, `\RenewDocumentEnvironment` does the same but with xparse's advanced features:
+
+```latex
+\usepackage{xparse}
+
+% Redefine the standard itemize environment
+\RenewDocumentEnvironment{itemize}{s}
+    {\IfBooleanT{#1}
+        {\begin{enumerate}}%
+        {\begin{itemize}}%
+    }
+    {\IfBooleanT{#1}
+        {\end{enumerate}}%
+        {\end{itemize}}%
+    }
+
+% Usage
+\begin{itemize}
+    \item Bulleted item
+\end{itemize}
+
+\begin{itemize}*
+    \item Numbered item  % Because we used star
+\end{itemize}
+```
+
+### Conditional Logic in xparse
+
+Use `\IfValueT`, `\IfValueF`, and `\IfValueTF` to handle optional arguments:
+
+```latex
+\NewDocumentEnvironment{note}{O{}}
+    {%
+        \textbf{Note\IfValueT{#1}{: #1}:}%
+        \begin{quote}\small
+    }
+    {%
+        \end{quote}
+    }
+
+% Usage
+\begin{note}
+    This is a generic note.
+\end{note}
+
+\begin{note}[Important]
+    This is an important note.
+\end{note}
+```
+
+### Comparison: Complete Example
+
+Here's a complete example showing the same environment with both approaches:
+
+**Method 1: Traditional `\newenvironment`**
+
+```latex
+\documentclass{article}
+\usepackage{tcolorbox}
+
+\newcounter{example}
+\newenvironment{examplebox}[2][Example]
+    {\stepcounter{example}
+     \def\exampletitle{#1}
+     \def\examplesubtitle{#2}
+     \begin{tcolorbox}[colback=yellow!10, colframe=orange,
+                       title=\exampletitle\ \theexample: \examplesubtitle]}
+    {\end{tcolorbox}}
+
+\begin{document}
+
+\begin{examplebox}{Basic Usage}
+    This is example 1.
+\end{examplebox}
+
+\begin{examplebox}[Custom]{Advanced Usage}
+    This is example 2.
+\end{examplebox}
+
+\end{document}
+```
+
+**Method 2: Modern `\NewDocumentEnvironment`**
+
+```latex
+\documentclass{article}
+\usepackage{xparse, tcolorbox}
+
+\newcounter{example}
+
+\NewDocumentEnvironment{examplebox}{O{Example} m}
+    {%
+        \stepcounter{example}%
+        \begin{tcolorbox}[colback=yellow!10, colframe=orange,
+                          title=#1\ \theexample: #2]%
+    }
+    {%
+        \end{tcolorbox}%
+    }
+
+\begin{document}
+
+\begin{examplebox}{Basic Usage}
+    This is example 1.
+\end{examplebox}
+
+\begin{examplebox}[Custom]{Advanced Usage}
+    This is example 2.
+\end{examplebox}
+
+\end{document}
+```
+
+The second approach is cleaner and more maintainable!
+
+### Advantages of `\NewDocumentEnvironment`
+
+1. **Multiple Optional Arguments**: Handle complex argument combinations
+2. **Better Documentation**: Argument spec is self-explanatory
+3. **Cleaner Syntax**: No need to manually save arguments
+4. **Arguments in End Code**: Direct access to #1, #2, etc. everywhere
+5. **More Flexible**: Support for delimiters, star modifiers, verbatim content
+6. **Error Handling**: Better error messages from xparse
+7. **Future-Proof**: Uses LaTeX3 infrastructure
+
+### When to Use What
+
+| Scenario | Recommendation |
+|----------|-----------------|
+| Simple environment, one optional arg | Either works, use `\newenvironment` if no xparse dependency |
+| Multiple optional arguments | **Use `\NewDocumentEnvironment`** |
+| Star modifier needed | **Use `\NewDocumentEnvironment`** |
+| Complex argument patterns | **Use `\NewDocumentEnvironment`** |
+| Arguments needed in end code | **Use `\NewDocumentEnvironment`** |
+| Minimal dependencies needed | Use `\newenvironment` |
+| Modern, well-maintained code | **Use `\NewDocumentEnvironment`** |
+
+---
+
+## Pre-defined LaTeX Commands and Macros
+
+LaTeX provides many built-in commands and macros for common tasks. Here's a comprehensive reference of frequently used ones:
+
+### Spacing Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\par` | End paragraph | `\par` (same as blank line) |
+| `\medskip` | Medium vertical space (~0.5 line) | `\medskip` |
+| `\smallskip` | Small vertical space (~0.25 line) | `\smallskip` |
+| `\bigskip` | Large vertical space (~1 line) | `\bigskip` |
+| `\vspace{length}` | Custom vertical space | `\vspace{1cm}` |
+| `\hspace{length}` | Custom horizontal space | `\hspace{2em}` |
+| `\\` | Line break | `Line 1 \\ Line 2` |
+| `\\[length]` | Line break with space | `\\[0.5cm]` |
+| `\noindent` | Suppress paragraph indent | `\noindent Text` |
+| `\indent` | Force paragraph indent | `\indent Text` |
+| `\linebreak` | Break line, justify | `Text \linebreak more` |
+| `\newline` | Break line, no justify | `Text \newline more` |
+| `\newpage` | Start new page | `\newpage` |
+| `\clearpage` | Flush floats, start page | `\clearpage` |
+| `\quad` | 1 em space | `Text \quad more` |
+| `\qquad` | 2 em space | `Text \qquad more` |
+| `\enspace` | 0.5 em space | `Text \enspace more` |
+| `\,` | Thin space (~3/18 em) | `Text \, more` |
+| `\:` | Medium space (~4/18 em) | `Text \: more` |
+| `\;` | Thick space (~5/18 em) | `Text \; more` |
+| `\!` | Negative thin space | `Text \! more` |
+
+### Text Formatting Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\textbf{text}` | Bold text | `\textbf{bold}` |
+| `\textit{text}` | Italic text | `\textit{italic}` |
+| `\texttt{text}` | Typewriter/monospace | `\texttt{code}` |
+| `\textsc{text}` | Small caps | `\textsc{Small Caps}` |
+| `\textsl{text}` | Slanted text | `\textsl{slanted}` |
+| `\textrm{text}` | Roman (serif) | `\textrm{roman}` |
+| `\textsf{text}` | Sans serif | `\textsf{sans}` |
+| `\textmd{text}` | Medium weight | `\textmd{medium}` |
+| `\textup{text}` | Upright (non-italic) | `\textup{upright}` |
+| `\emph{text}` | Emphasis (toggle italic) | `\emph{emphasized}` |
+| `\underline{text}` | Underlined text | `\underline{underlined}` |
+| `\uppercase{text}` | Uppercase text | `\uppercase{Small}` → `SMALL` |
+| `\lowercase{text}` | Lowercase text | `\lowercase{SMALL}` → `small` |
+| `\MakeUppercase{text}` | Make uppercase | `\MakeUppercase{text}` |
+| `\MakeLowercase{text}` | Make lowercase | `\MakeLowercase{TEXT}` |
+
+### Font Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\bfseries` | Bold series (declaration) | `{\bfseries bold text}` |
+| `\itshape` | Italic shape (declaration) | `{\itshape italic text}` |
+| `\ttfamily` | Typewriter family (declaration) | `{\ttfamily code}` |
+| `\sffamily` | Sans serif family (declaration) | `{\sffamily sans}` |
+| `\rmfamily` | Roman family (declaration) | `{\rmfamily roman}` |
+| `\mdseries` | Medium series (declaration) | `{\mdseries medium}` |
+| `\normalfont` | Reset to normal | `{\bfseries text \normalfont normal}` |
+| `\slshape` | Slanted shape (declaration) | `{\slshape slanted}` |
+| `\upshape` | Upright shape (declaration) | `{\upshape upright}` |
+| `\tiny` | Tiny size | `{\tiny tiny}` |
+| `\scriptsize` | Script size | `{\scriptsize small}` |
+| `\footnotesize` | Footnote size | `{\footnotesize smaller}` |
+| `\small` | Small size | `{\small small}` |
+| `\normalsize` | Normal size | `{\normalsize normal}` |
+| `\large` | Large size | `{\large large}` |
+| `\Large` | Larger size | `{\Large larger}` |
+| `\LARGE` | Very large size | `{\LARGE very large}` |
+| `\huge` | Huge size | `{\huge huge}` |
+| `\Huge` | Largest size | `{\Huge largest}` |
+
+### Paragraph Formatting
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\centering` | Center text (declaration) | `{\centering centered}` |
+| `\raggedright` | Left-align (declaration) | `{\raggedright left}` |
+| `\raggedleft` | Right-align (declaration) | `{\raggedleft right}` |
+| `\justify` | Justify text (declaration) | `{\justify justified}` |
+| `\singlespacing` | Single spacing | `{\singlespacing text}` |
+| `\onehalfspacing` | 1.5 spacing (needs setspace) | `{\onehalfspacing text}` |
+| `\doublespacing` | Double spacing (needs setspace) | `{\doublespacing text}` |
+
+### Structural Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\section{title}` | First-level heading | `\section{Introduction}` |
+| `\subsection{title}` | Second-level heading | `\subsection{Background}` |
+| `\subsubsection{title}` | Third-level heading | `\subsubsection{Details}` |
+| `\paragraph{title}` | Paragraph heading | `\paragraph{Note}` |
+| `\subparagraph{title}` | Sub-paragraph heading | `\subparagraph{Detail}` |
+| `\section*{title}` | Unnumbered heading | `\section*{Appendix}` |
+| `\tableofcontents` | Generate table of contents | `\tableofcontents` |
+| `\listoffigures` | List of figures | `\listoffigures` |
+| `\listoftables` | List of tables | `\listoftables` |
+| `\appendix` | Start appendix | `\appendix` |
+
+### References and Labels
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\label{name}` | Create label | `\label{fig:example}` |
+| `\ref{name}` | Reference number | `See \ref{fig:example}` |
+| `\pageref{name}` | Reference page number | `Page \pageref{fig:example}` |
+| `\cite{key}` | Citation | `\cite{author2020}` |
+| `\footnote{text}` | Footnote | `Text\footnote{note}` |
+| `\index{term}` | Index entry (needs makeidx) | `\index{term}` |
+
+### List Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\item` | List item | In `itemize`, `enumerate`, `description` |
+| `\begin{itemize}` | Unordered list | `\begin{itemize}\item text\end{itemize}` |
+| `\begin{enumerate}` | Ordered list | `\begin{enumerate}\item text\end{enumerate}` |
+| `\begin{description}` | Description list | `\begin{description}\item[term]definition\end{description}` |
+| `\setcounter{enumi}{n}` | Set list counter | `\setcounter{enumi}{5}` |
+
+### Box and Frame Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\mbox{text}` | No-break box | `\mbox{no break}` |
+| `\makebox[width]{text}` | Box with width | `\makebox[5cm]{centered}` |
+| `\fbox{text}` | Framed box | `\fbox{boxed text}` |
+| `\framebox[width]{text}` | Framed box with width | `\framebox[5cm]{text}` |
+| `\parbox{width}{text}` | Paragraph in box | `\parbox{5cm}{multiline text}` |
+| `\begin{minipage}{width}` | Mini page environment | `\begin{minipage}{5cm}...\end{minipage}` |
+| `\rule{width}{height}` | Horizontal rule | `\rule{5cm}{1pt}` |
+| `\hline` | Horizontal line in table | Used in tabular |
+| `\vline` | Vertical line in table | Used in tabular |
+
+### Math Mode Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `$...$` | Inline math | `$x^2 + y^2 = z^2$` |
+| `\(...\)` | Inline math (alternative) | `\(x^2\)` |
+| `$$...$$` | Display math | `$$x^2 + y^2 = z^2$$` |
+| `\[...\]` | Display math (alternative) | `\[x^2 + y^2 = z^2\]` |
+| `\begin{equation}` | Numbered equation | `\begin{equation}...\end{equation}` |
+| `\begin{equation*}` | Unnumbered equation | `\begin{equation*}...\end{equation*}` |
+| `\frac{num}{den}` | Fraction | `$\frac{1}{2}$` |
+| `\sqrt{x}` | Square root | `$\sqrt{x}$` |
+| `\sqrt[n]{x}` | n-th root | `$\sqrt[3]{x}$` |
+| `\sum` | Summation | `$\sum_{i=1}^{n}$` |
+| `\prod` | Product | `$\prod_{i=1}^{n}$` |
+| `\int` | Integral | `$\int_a^b f(x)dx$` |
+| `\lim` | Limit | `$\lim_{x \to \infty}$` |
+| `\sin`, `\cos`, `\tan` | Trig functions | `$\sin(x)$` |
+| `\log`, `\ln`, `\exp` | Logarithm functions | `$\log(x)$` |
+| `\mathbb{R}` | Blackboard bold | `$\mathbb{R}$` for ℝ |
+| `\mathbf{v}` | Bold vector | `$\mathbf{v}$` |
+| `\mathit{text}` | Italic in math | `$\mathit{text}$` |
+| `\mathcal{L}` | Calligraphic letters | `$\mathcal{L}$` |
+| `\mathrm{text}` | Roman in math mode | `$\mathrm{const}$` |
+
+### Special Characters and Symbols
+
+| Command | Function | Output |
+|---------|----------|--------|
+| `\`{a}` | Accent grave | à |
+| `\'{a}` | Accent acute | á |
+| `\^{a}` | Circumflex accent | â |
+| `\"{a}` | Diaeresis (umlaut) | ä |
+| `\~{a}` | Tilde | ã |
+| `\={a}` | Macron | ā |
+| `\u{a}` | Breve | ă |
+| `\v{a}` | Caron | ǎ |
+| `\H{a}` | Double acute | ő |
+| `\t{aa}` | Tie bar | a͡a |
+| `\c{c}` | Cedilla | ç |
+| `\d{a}` | Dot below | ạ |
+| `\b{a}` | Bar below | a̶ |
+| `\copyright` | Copyright | © |
+| `\textregistered` | Registered | ® |
+| `\dag` | Dagger | † |
+| `\ddag` | Double dagger | ‡ |
+| `\S` | Section sign | § |
+| `\P` | Pilcrow | ¶ |
+| `\pounds` | Pound sign | £ |
+| `\textyen` | Yen sign | ¥ |
+| `\textcurrency` | Currency sign | ¤ |
+| `\textdegree` | Degree | ° |
+| `\textpromile` | Per mille | ‰ |
+| `\ldots` | Ellipsis | … |
+| `\textendash` | En-dash | – |
+| `\textemdash` | Em-dash | — |
+| `\textquoteleft` | Left quote | ' |
+| `\textquoteright` | Right quote | ' |
+| `\textquotedblleft` | Left double quote | " |
+| `\textquotedblright` | Right double quote | " |
+
+### Counter Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\newcounter{name}` | Create counter | `\newcounter{mycnt}` |
+| `\setcounter{name}{value}` | Set counter value | `\setcounter{page}{1}` |
+| `\addtocounter{name}{value}` | Add to counter | `\addtocounter{page}{2}` |
+| `\stepcounter{name}` | Increment counter | `\stepcounter{section}` |
+| `\the<counter>` | Display counter | `\thepage`, `\thesection` |
+| `\arabic{name}` | Arabic numerals | `\arabic{counter}` |
+| `\roman{name}` | Lowercase Roman | `\roman{counter}` |
+| `\Roman{name}` | Uppercase Roman | `\Roman{counter}` |
+| `\alph{name}` | Lowercase letters | `\alph{counter}` |
+| `\Alph{name}` | Uppercase letters | `\Alph{counter}` |
+
+### Conditional Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\ifx` | Compare tokens | `\ifx a b ... \fi` |
+| `\ifdim` | Compare dimensions | `\ifdim 5cm > 3cm ... \fi` |
+| `\ifnum` | Compare numbers | `\ifnum 5 > 3 ... \fi` |
+| `\ifvoid` | Check box | `\ifvoid 0 ... \fi` |
+| `\iftrue` | Always true | `\iftrue ... \fi` |
+| `\iffalse` | Always false | `\iffalse ... \fi` |
+| `\else` | Else clause | `\if ... \else ... \fi` |
+| `\fi` | End conditional | Required |
+
+### Commonly Used Utility Commands
+
+| Command | Function | Usage |
+|---------|----------|-------|
+| `\strut` | Invisible strut | `\strut text` (for alignment) |
+| `\phantom{text}` | Invisible space | Reserve space for text |
+| `\hphantom{text}` | Horizontal phantom | `\hphantom{text}` |
+| `\vphantom{text}` | Vertical phantom | `\vphantom{text}` |
+| `\smash{text}` | Remove height/depth | `\smash{text}` |
+| `\relax` | No operation | `\relax` |
+| `\protect` | Protect command | `\protect\command` |
+| `\expandafter` | Expand next token | Advanced usage |
+| `\input{file}` | Include file | `\input{header}` |
+| `\include{file}` | Include with page break | `\include{chapter1}` |
+| `\includeonly{file}` | Only process certain files | `\includeonly{chapter1,chapter2}` |
+
+### Example: Using Pre-defined Macros
+
+```latex
+\documentclass{article}
+
+\begin{document}
+
+% Spacing examples
+\noindent This paragraph starts without indentation.
+\par
+Normal paragraph starts here with indentation.
+
+\smallskip
+\noindent Small gap above this line.
+
+\medskip
+\noindent Medium gap above this line.
+
+\bigskip
+\noindent Big gap above this line.
+
+% Text formatting examples
+Normal text \textbf{bold text} \textit{italic text} \texttt{code}.
+
+% Font size examples
+{\tiny Tiny text}
+{\small Small text}
+{\normalsize Normal text}
+{\large Large text}
+{\LARGE Very large text}
+{\huge Huge text}
+
+% Box examples
+\fbox{This text is in a box}
+
+\parbox{5cm}{This is a paragraph box with a width of 5cm.
+It can contain multiple lines of text.}
+
+\end{document}
+```
 
 ---
 
